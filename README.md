@@ -18,10 +18,24 @@ The default address is supported by huggingface, I didn't get a authorization.
 2. You can build a API service like : 
    
 ```Json
-    #Post Json: 
-    {"context": "You  win the game.",  "number": 3 }
-    #response Json: 
-    {"sentenses":[{ "value": "You are so smart"},{ "value": "That's great"},{ "value": "The Next game is waitting for you."},]}
+//Post Json: 
+{
+	"context": "You  win the game.",
+	"number": 3
+}
+
+//Response Json: 
+{
+ 	"sentenses": [
+      {
+         "value": "You are so smart"
+      }, {
+         "value": "That's great"
+      }, {
+         "value": "The Next game is waitting for you."
+      }
+   ]
+}
 ```
 
 3. If you want use Another language , you can build your language service.
