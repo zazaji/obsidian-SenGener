@@ -6,7 +6,7 @@ This plugin is used to generate a serial of Sentenses for writting.
 ![](./obsidian-sengener/demo_cn.gif)
 
 ## Thanks
-I got some code from obsidian-completr .  
+Sengener based on obsidian-completr. I copied lots of code from it.
 https://github.com/tth05/obsidian-completr
 
 ## How to use this plugin
