@@ -16,15 +16,17 @@ I build the API service with GPT2. You can also use GPT2 to generate Sentenses d
 The default address is supported by huggingface, I didn't get a authorization. 
 
 2. You can build a API service like : 
-   
+- Post Json: 
+
 ```Json
-//Post Json: 
 {
 	"context": "You  win the game.",
 	"number": 3
 }
+```
 
-//Response Json: 
+- Response Json: 
+```Json
 {
  	"sentenses": [
       {
