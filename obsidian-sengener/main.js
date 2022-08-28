@@ -112,7 +112,6 @@ var SuggestionPopup = class extends import_obsidian3.EditorSuggest {
         this.word = '';
     }
     getSuggestions() {
-        console.log(this.context);
         let line = this.context.end.line;
         let cursor = this.context.editor.getLine(line).length;
         console.log(line, cursor);
@@ -171,6 +170,7 @@ var SuggestionPopup = class extends import_obsidian3.EditorSuggest {
     }
 
     selectSuggestion(value, evt) {
+        console.log(this.context);
         const replacement = getSuggestionReplacement(value);
         const endPos = this.context.end;
         this.context.editor.replaceRange(replacement, endPos, __spreadProps(__spreadValues({}, endPos), {
@@ -260,7 +260,6 @@ var SenGenerPlugin = class extends import_obsidian5.Plugin {
             this._suggestionPopup = new SuggestionPopup(this.app, this.settings, this.snippetManager);
             this.registerEditorSuggest(this._suggestionPopup);
             this.addSettingTab(new SenGenerSettingsTab(this.app, this));
-
             this.setupCommands();
             if ((_a = this.app.vault.config) == null ? void 0 : _a.legacyEditor) {
                 console.log("SenGener: Without Live Preview enabled, some features of SenGener will not work properly!");
@@ -324,21 +323,6 @@ var SenGenerPlugin = class extends import_obsidian5.Plugin {
             isVisible: () => this._suggestionPopup.isVisible()
         });
         //快捷键2
-        this.addCommand({
-            id: "key-to-suggestion1",
-            name: "key-to-suggestion1",
-            hotkeys: [{
-                key: "Tab",
-                modifiers: ["Ctrl"]
-            }],
-            editorCallback: (editor) => {
-                __show = true;
-                this._suggestionPopup.trigger(editor, this.app.workspace.getActiveFile(), true);
-            },
-            isVisible: () => this._suggestionPopup.isVisible()
-
-        });
-        //快捷键3
         this.addCommand({
             id: "key-to-suggestion",
             name: "key-to-suggestion",
