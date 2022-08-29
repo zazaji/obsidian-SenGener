@@ -8,6 +8,7 @@ Author：https://github.com/zazaji
 Thanks: https://github.com/tth05/obsidian-completr
 */
 var __show = false;
+var __end;
 var __defProp = Object.defineProperty;
 var __defProps = Object.defineProperties;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -101,6 +102,14 @@ var DEFAULT_SETTINGS = {
 // src/popup.ts
 var import_obsidian3 = require("obsidian");
 
+
+
+
+
+// listen(import_obsidian3, "click", function() {
+//     console.log('hahah');
+// })
+
 //生成候选项
 var SuggestionPopup = class extends import_obsidian3.EditorSuggest {
     constructor(app, settings, snippetManager) {
@@ -112,9 +121,10 @@ var SuggestionPopup = class extends import_obsidian3.EditorSuggest {
         this.word = '';
     }
     getSuggestions() {
+        __end = this.context.end;
         let line = this.context.end.line;
         let cursor = this.context.editor.getLine(line).length;
-        console.log(line, cursor);
+        // console.log(line, cursor);
         let words = ''
         for (var i = line - 3; i < line; i++) {
             if (i >= 0) {
@@ -170,20 +180,22 @@ var SuggestionPopup = class extends import_obsidian3.EditorSuggest {
     }
 
     selectSuggestion(value, evt) {
-        console.log(this.context);
+        const activeView = this.app.workspace.getActiveViewOfType(import_obsidian3.MarkdownView);
+        // console.log(activeView.editor);
+        // console.log(this.context.editor);
         const replacement = getSuggestionReplacement(value);
-        const endPos = this.context.end;
-        this.context.editor.replaceRange(replacement, endPos, __spreadProps(__spreadValues({}, endPos), {
-            ch: Math.min(endPos.ch, this.context.editor.getLine(endPos.line).length)
+        const endPos = __end;
+        activeView.editor.replaceRange(replacement, endPos, __spreadProps(__spreadValues({}, endPos), {
+            ch: Math.min(endPos.ch, activeView.editor.getLine(endPos.line).length)
         }));
         if (replacement.contains("#") || replacement.contains("~")) {
             if (!this.disableSnippets) {
-                this.snippetManager.handleSnippet(replacement, endPos, this.context.editor);
+                this.snippetManager.handleSnippet(replacement, endPos, activeView.editor);
             } else {
                 console.log("SenGener: Please enable Live Preview mode to use snippets");
             }
         } else {
-            this.context.editor.setCursor(__spreadProps(__spreadValues({}, endPos), { ch: endPos.ch + replacement.length }));
+            activeView.editor.setCursor(__spreadProps(__spreadValues({}, endPos), { ch: endPos.ch + replacement.length }));
         }
         this.close();
         this.justClosed = true;
@@ -299,9 +311,6 @@ var SenGenerPlugin = class extends import_obsidian5.Plugin {
                         });
                         e.target.dispatchEvent(event);
                         console.log("Hotkey " + id + " entered")
-                            // continue;
-                        console.log('slls')
-
                         return false;
                     }
                     if (app.commands.executeCommandById(id))
