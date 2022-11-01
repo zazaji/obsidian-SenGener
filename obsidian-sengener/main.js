@@ -9,6 +9,19 @@ Thanks: https://github.com/tth05/obsidian-completr
 */
 var __show = false;
 var __end;
+var __apiUrl;
+// var __apiUrl2;
+var __activeView;
+var __article_types;
+
+var __token;
+var __isIndex;
+var __cn_note;
+var __time = new Date().getTime() - 2000;
+var __article_type;
+const QUOTE_VIEW_TYPE = "QUOTE";
+var BARCONTAINER;
+var statusBarItem;
 var __defProp = Object.defineProperty;
 var __defProps = Object.defineProperties;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -80,6 +93,16 @@ var SnippetManager = class {
     onunload() {
         this.clearAllPlaceholders();
     }
+    clearAllPlaceholders() {
+        if (this.currentPlaceholderReferences.length === 0)
+            return;
+        const firstRef = this.currentPlaceholderReferences[0];
+        const view = editorToCodeMirrorView(firstRef.editor);
+        view.dispatch({
+            effects: clearMarks.of(null)
+        });
+        this.currentPlaceholderReferences = [];
+    }
 };
 
 // src/provider/provider.ts
@@ -88,27 +111,274 @@ function getSuggestionDisplayName(suggestion, lowerCase = false) {
     return lowerCase ? res.toLowerCase() : res;
 }
 
+function content_text(text) {
+    BARCONTAINER.children[5].empty();
+    BARCONTAINER.children[5].createDiv('ssmall markdown-preview-view', (el) => {
+        obsidian.MarkdownRenderer.renderMarkdown(text, el, '', this);
+    });
+}
+
+//根据总页数和当前页分页
+function pagebar(n, m) {
+    BARCONTAINER.children[4].empty();
+    start = ((n > 5) && (m - 2 > 1)) ? m - 2 : 1;
+    start = ((n <= 5) || (start + 4 < n)) ? start : n - 4;
+    end = start + 4 > n ? ((m + 2 <= n) && ((n > 5)) ? m + 2 : n) : start + 4;
+    if (1 < start) {
+        BARCONTAINER.children[4].createEl("a", { text: "<<" }, (el) => {
+            el.onClickEvent(() => {
+                searchTerm(start - 3, __article_type);
+            })
+        })
+    }
+    for (let i = start; i <= end; i++) {
+        if (m != i) {
+            BARCONTAINER.children[4].createEl("a", { text: i }, (el) => {
+                el.onClickEvent(() => {
+                    searchTerm(i, __article_type);
+                })
+            })
+        } else {
+            BARCONTAINER.children[4].createEl("a", { text: i, cls: "active" });
+        }
+    }
+
+    if (n > end) {
+        BARCONTAINER.children[4].createEl("a", { text: ">>" }, (el) => {
+            el.onClickEvent(() => {
+                searchTerm(end + 3, __article_type);
+            })
+        })
+    }
+}
+
 function getSuggestionReplacement(suggestion) {
     return typeof suggestion === "string" ? suggestion : suggestion.replacement;
 }
-
+//状态栏信息提示
+function bar_text(text) {
+    statusBarItem.empty();
+    statusBarItem.createEl("span", { text: text });
+    setTimeout(() => { statusBarItem.empty(); }, 5000);
+    return '';
+}
+// 
 // src/settings.ts
 var DEFAULT_SETTINGS = {
-    apiUrl: "https://transformer.huggingface.co/autocomplete/",
+    // apiUrl: "https://transformer.huggingface.co/autocomplete/",
+    apiUrl: "https://fwzd.myfawu.com/",
+    // apiUrl2: "https://fwzd.myfawu.com/refer/",
     chioceNumber: 3,
+    className: "poem",
+    isIndex: false
 }
 
 
-// src/popup.ts
+//全文检索函数 
+function searchTerm(page, article_type) {
+    let idata = {
+        "context": BARCONTAINER.children[2].value,
+        'page': page,
+        'token': __token,
+        'article_type': article_type,
+        "model_size": "distilgpt2/small",
+        "top_p": 0.9,
+        "temperature": 1,
+        "max_time": 1.2,
+    };
+    bar_text("加载中...🍌");
+    __async(this, null, function*() {
+        let data = yield fetch(__apiUrl + 'refer', {
+            method: "post",
+            headers: {
+                "content-type": "application/json"
+            },
+            body: JSON.stringify(idata)
+        }).then((res) => res.json()).catch((err) => { return bar_text("加载失败！🍎"); });
+        if (data != '') {
+            let text = data['ref'].map(function(item) { return '<span class="title"> <b>-' + item['title'] + '</b> </span><br>' + item['content'] + '' }).join('<br>');
+            bar_text("加载完成！🥦");
+            pagebar(data['page'], page);
+            content_text(text);
+        }
+    })
+}
+
+//获取功能列表
+function get_article_type() {
+    // bar_text("加载中...🍌");
+    __async(this, null, function*() {
+        // console.log(__apiUrl + 'func');
+        let data = yield fetch(__apiUrl + 'func', {
+            method: "get",
+            headers: {
+                "content-type": "application/json"
+            },
+        }).then((res) => res.json()).catch((err) => { return bar_text("初始化失败！🍎"); });
+        if (data != '') {
+            __article_types = data;
+            console.log(__article_type);
+            console.log(__article_types);
+            if (__article_types.hasOwnProperty(__article_type) == false) {
+                __article_type = Object.keys(__article_types)[0];
+            }
+            bar_text("初始化" + __article_type + "模型🥦");
+        }
+    })
+}
+
+//生成句子函数 
+function senGenerate(url, text, atype, number, isindex = false) {
+    console.log(new Date().getTime() - __time);
+    if (new Date().getTime() - __time < 1.5 * 1000) {
+        return bar_text("稍慢一点可能更好！🍎");
+    }
+    __time = new Date().getTime();
+    let idata = {
+        "context": text,
+        'token': __token,
+        "model_size": "distilgpt2/small",
+        "article_type": atype,
+        "top_p": 0.9,
+        "temperature": 1,
+        "max_time": 1.2,
+        "is_index": isindex,
+        "number": number
+    };
+    return __async(this, null, function*() {
+        let data = yield fetch(url, {
+            method: "post",
+            headers: {
+                "content-type": "application/json"
+            },
+            body: JSON.stringify(idata)
+        }).then((res) => res.json()).catch((err) => { return bar_text("加载失败！🍎"); });
+        if (data != '') {
+            if (isindex) {
+                BARCONTAINER.children[2].value = data['keywords'];
+                let text = data['ref'].map(function(item) { return '<h5>' + item['title'] + '</h5>' + item['content'] + '' }).join('<br>');
+                pagebar(data['page'], 1);
+                content_text(text);
+            }
+
+            return data['sentences'].map(function(item) { return item['value'] })
+        } else {
+            return [];
+        }
+
+    })
+}
+
+var obsidian = require('obsidian');
+//    添加右侧栏
 var import_obsidian3 = require("obsidian");
+//    初始化右侧栏
+class QUOTEListView extends obsidian.ItemView {
+    constructor(leaf, plugin) {
+        super(leaf);
+        this.plugin = plugin;
+        this.lastRerender = 0;
+        this.groupedItems = [];
+        this.itemsByFile = new Map();
+        this.initialLoad = true;
+        this.searchTerm = "";
+    }
+    getViewType() {
+        return QUOTE_VIEW_TYPE;
+    }
+    getDisplayText() {
+        return "QUOTE List";
+    }
+    getIcon() {
+        return 'list';
+    }
+    async onload() {
+            setTimeout(() => {
+                __article_type = this.plugin.settings.className;
+                __apiUrl = this.plugin.settings.apiUrl;
+                __token = this.plugin.settings.token;
+                __isIndex = this.plugin.settings.isIndex;
+                __cn_note = this.plugin.settings.cn_note;
+                get_article_type();
+            }, 3000);
+            statusBarItem = this.plugin.addStatusBarItem();
+
+        }
+        //    右侧栏
+    async onOpen() {
+        BARCONTAINER = this.containerEl.children[1];
+        // BARCONTAINER = container;
+        BARCONTAINER.empty();
+        BARCONTAINER.createEl("h4", { text: "写作助手", cls: 'col-10' });
+        BARCONTAINER.createEl("button", { text: "8句", type: 'button', cls: 'col-2' }, (el) => {
+            el.onClickEvent(() => {
+                bar_text("加载中...🍌");
+                auto_write(7, 7);
+            });
+        });
+
+        BARCONTAINER.createEl("input", { value: "", type: 'text', cls: 'col-6', placeholder: '请输入关键词' });
+        BARCONTAINER.createEl("button", { text: "搜", type: 'button', cls: 'col-2' }, (el) => {
+            el.onClickEvent(() => {
+                __apiUrl = this.plugin.settings.apiUrl;
+                searchTerm(1, __article_type);
+            })
+        });
+        BARCONTAINER.createDiv("pagination");
+        BARCONTAINER.createDiv("content", (el) => {
+            obsidian.MarkdownRenderer.renderMarkdown('', el, '', this);
+        });
+    }
+
+    async onClose() {
+        // Nothing to clean up.
+    }
+}
 
 
+//生成句子函数 
+function auto_write(j, n) {
+    if (__activeView) {
+        let line = __activeView.editor.lastLine();
+        let cursor = __activeView.editor.getLine(line).length;
+        __end.ch = cursor;
+        __end.line = line;
+        let words = ''
+        for (var i = line - 3; i < line; i++) {
+            if (i >= 0) {
+                words += __activeView.editor.getLine(i) + '\n';
+            }
+        }
+        let last_word = __activeView.editor.getLine(line).slice(0, cursor);
+        words += last_word;
 
+        data = __async(this, null, function*() {
 
+            let data = yield senGenerate(__apiUrl + 'generate', words, __article_type, 1, false);
+            if (data.length > 0) {
+                words += data[0];
+                const replacement = getSuggestionReplacement(data[0]);
+                const endPos = __end;
+                __activeView.editor.replaceRange(replacement, endPos, __spreadProps(__spreadValues({}, endPos), {
+                    ch: __end.ch
+                }));
+                __activeView.editor.setCursor(__spreadProps(__spreadValues({}, endPos), { ch: endPos.ch + replacement.length }));
 
-// listen(import_obsidian3, "click", function() {
-//     console.log('hahah');
-// })
+                if (j > 0) {
+                    setTimeout(function(j, n) {
+                        auto_write(j - 1, n);
+                    }, Math.max(1400, 3000 - new Date().getTime() - __time), j, n);
+
+                } else {
+                    bar_text("加载完成！🥦");
+                }
+            }
+        });
+
+    } else {
+        bar_text('失败，请先生成按快捷键生成一句测试🍎');
+    }
+}
 
 //生成候选项
 var SuggestionPopup = class extends import_obsidian3.EditorSuggest {
@@ -121,10 +391,11 @@ var SuggestionPopup = class extends import_obsidian3.EditorSuggest {
         this.word = '';
     }
     getSuggestions() {
+        __activeView = this.app.workspace.getActiveViewOfType(import_obsidian3.MarkdownView);
         __end = this.context.end;
+
         let line = this.context.end.line;
         let cursor = this.context.editor.getLine(line).length;
-        // console.log(line, cursor);
         let words = ''
         for (var i = line - 3; i < line; i++) {
             if (i >= 0) {
@@ -134,27 +405,11 @@ var SuggestionPopup = class extends import_obsidian3.EditorSuggest {
         let last_word = this.context.editor.getLine(line).slice(0, cursor);
         words += last_word;
         this.word = words;
-        console.log(this.word);
+        __apiUrl = this.settings.apiUrl;
+        bar_text("加载中...🍌")
         return __async(this, null, function*() {
-            let url = this.settings.apiUrl;
-            let idata = {
-                "context": this.word,
-                "model_size": "distilgpt2/small",
-                "top_p": 0.9,
-                "temperature": 1,
-                "max_time": 1.2,
-                "number": this.settings.chioceNumber
-            };
-            let data = yield fetch(url, {
-                method: "post",
-                headers: {
-                    "content-type": "application/json"
-                },
-                body: JSON.stringify(idata)
-            }).then((res) => res.json())
-            return data['sentences'].map(function(item) { return item['value'] })
-        })
-
+            return yield senGenerate(__apiUrl + 'generate', this.word, __article_type, this.settings.chioceNumber, __isIndex);
+        });
     }
     onTrigger(cursor, editor, file) {
         if (this.justClosed) {
@@ -176,14 +431,15 @@ var SuggestionPopup = class extends import_obsidian3.EditorSuggest {
     }
     renderSuggestion(value, el) {
         el.addClass("sengener-suggestion-item");
+        bar_text("加载完成！🥦");
         el.setText(getSuggestionDisplayName(value));
     }
 
     selectSuggestion(value, evt) {
         const activeView = this.app.workspace.getActiveViewOfType(import_obsidian3.MarkdownView);
-        // console.log(activeView.editor);
-        // console.log(this.context.editor);
+
         const replacement = getSuggestionReplacement(value);
+
         const endPos = __end;
         activeView.editor.replaceRange(replacement, endPos, __spreadProps(__spreadValues({}, endPos), {
             ch: Math.min(endPos.ch, activeView.editor.getLine(endPos.line).length)
@@ -230,31 +486,87 @@ var SenGenerSettingsTab = class extends import_obsidian4.PluginSettingTab {
     display() {
         const { containerEl } = this;
         containerEl.empty();
-        new import_obsidian4.Setting(containerEl).setName("API Address").setDesc("The service address for generating sentenses.\r\n The default address is supported by huggingface\
-        ").addText((text) => text.setValue(this.plugin.settings.apiUrl).onChange((val) => __async(this, null, function*() {
-            try {
-                text.inputEl.removeClass("SenGener-settings-error");
-                this.plugin.settings.apiUrl = val;
-                yield this.plugin.saveSettings();
-            } catch (e) {
-                text.inputEl.addClass("SenGener-settings-error");
-            }
-        })));
-        new import_obsidian4.Setting(containerEl).setName("Number of choices").setDesc("List Number.").addText((text) => {
-            text.inputEl.type = "number";
-            text.setValue(this.plugin.settings.chioceNumber + "").onChange((val) => __async(this, null, function*() {
-                if (!val || val.length < 1 || val.length > 9)
-                    return;
-                this.plugin.settings.chioceNumber = parseInt(val);
+        containerEl.createEl("h2", { text: "Settings for Writting Assistant." });
+
+        containerEl.createDiv("content", (el) => {
+            obsidian.MarkdownRenderer.renderMarkdown(__cn_note, el, '', this);
+        });
+
+        new import_obsidian4.Setting(containerEl).setName("API Address").setDesc("The service address for generating sentenses.\r\n\
+         The default address is https://fwzd.myfawu.com/").addText((text) => text.setValue(this.plugin.settings.apiUrl)
+            .onChange(
+                (val) => __async(this, null, function*() {
+                    try {
+                        text.inputEl.removeClass("SenGener-settings-error");
+                        this.plugin.settings.apiUrl = val;
+                        yield this.plugin.saveSettings();
+                    } catch (e) {
+                        text.inputEl.addClass("SenGener-settings-error");
+                    }
+                })));
+
+        new import_obsidian4.Setting(containerEl).setName("token").setDesc("You can apply for your personal token for better experience, visit https://fwzd.myfawu.com/my/")
+            .addText((text) => text.setValue(this.plugin.settings.token)
+                .onChange(
+                    (val) => __async(this, null, function*() {
+                        try {
+                            text.inputEl.removeClass("SenGener-settings-error");
+                            this.plugin.settings.token = val;
+                            __token = val;
+                            yield this.plugin.saveSettings();
+                        } catch (e) {
+                            text.inputEl.addClass("SenGener-settings-error");
+                        }
+                    })));
+
+        new import_obsidian4.Setting(containerEl).setName("Enable searching?").setDesc("Enable Text searching service").addToggle((toggle) => {
+            toggle.setValue(this.plugin.settings.isIndex);
+            toggle.onChange((value) => __async(this, null, function*() {
+                __isIndex = value;
+                this.plugin.settings.isIndex = value;
                 yield this.plugin.saveSettings();
             }));
         });
+        // new import_obsidian4.Setting(containerEl).setName("Text searching service Address").setDesc("The service address for Indexing .\r\n\
+        // The default address is https://fwzd.myfawu.com/refer").addText((text) => text.setValue(this.plugin.settings.apiUrl2)
+        //     .onChange(
+        //         (val) => __async(this, null, function*() {
+        //             try {
+        //                 text.inputEl.removeClass("SenGener-settings-error");
+        //                 this.plugin.settings.apiUrl2 = val;
+        //                 yield this.plugin.saveSettings();
+        //             } catch (e) {
+        //                 text.inputEl.addClass("SenGener-settings-error");
+        //             }
+        //         })));
+
+        new import_obsidian4.Setting(containerEl).setName("Number of choices").setDesc(" Number of generated sentences")
+            .addText((text) => {
+                text.inputEl.type = "number";
+                text.setValue(this.plugin.settings.chioceNumber + "").onChange((val) => __async(this, null, function*() {
+                    if (!val || val.length < 1 || val.length > 9)
+                        return;
+                    this.plugin.settings.chioceNumber = parseInt(val);
+                    yield this.plugin.saveSettings();
+                }));
+            });
+
+        new import_obsidian4.Setting(containerEl).setName("Type").setDesc("Type of what you are writting")
+            .addDropdown((dropdown) => dropdown.addOptions(__article_types)
+                .setValue(this.plugin.settings.className).onChange((value) => __async(this, null, function*() {
+                    __article_type = value;
+                    this.plugin.settings.className = value;
+                    yield this.plugin.saveSettings();
+                }))
+            );
     }
+
     createEnabledSetting(propertyName, desc, container) {
-        new import_obsidian4.Setting(container).setName("Enabled").setDesc(desc).addToggle((toggle) => toggle.setValue(this.plugin.settings[propertyName]).onChange((val) => __async(this, null, function*() {
-            this.plugin.settings[propertyName] = val;
-            yield this.plugin.saveSettings();
-        })));
+        new import_obsidian4.Setting(container).setName("Enabled").setDesc(desc).addToggle((toggle) => toggle.setValue(this.plugin.settings[propertyName])
+            .onChange((val) => __async(this, null, function*() {
+                this.plugin.settings[propertyName] = val;
+                yield this.plugin.saveSettings();
+            })));
     }
 };
 
@@ -264,8 +576,24 @@ var SenGenerPlugin = class extends import_obsidian5.Plugin {
         super(...arguments);
 
     }
+
+    async activateView() {
+        if (this.app.workspace.getLeavesOfType(QUOTE_VIEW_TYPE).length)
+            return;
+        this.app.workspace.getRightLeaf(false).setViewState({
+            type: QUOTE_VIEW_TYPE,
+            active: true,
+        });
+    }
     onload() {
+        this.registerView(QUOTE_VIEW_TYPE, (leaf) => {
+            const newView = new QUOTEListView(leaf, this);
+            return newView;
+        });
+
+        setTimeout(() => { this.activateView(); }, 2000);
         return __async(this, null, function*() {
+
             var _a;
             yield this.loadSettings();
             this.snippetManager = new SnippetManager();
@@ -273,9 +601,7 @@ var SenGenerPlugin = class extends import_obsidian5.Plugin {
             this.registerEditorSuggest(this._suggestionPopup);
             this.addSettingTab(new SenGenerSettingsTab(this.app, this));
             this.setupCommands();
-            if ((_a = this.app.vault.config) == null ? void 0 : _a.legacyEditor) {
-                console.log("SenGener: Without Live Preview enabled, some features of SenGener will not work properly!");
-            }
+
         });
     }
     setupCommands() {
@@ -341,17 +667,20 @@ var SenGenerPlugin = class extends import_obsidian5.Plugin {
             }],
             editorCallback: (editor) => {
                 __show = true;
-                this._suggestionPopup.trigger(editor, this.app.workspace.getActiveFile(), true);
+                this._suggestionPopup.trigger(editor, '', true);
             },
             isVisible: () => this._suggestionPopup.isVisible()
         });
+
+
 
     }
 
 
     onunload() {
         return __async(this, null, function*() {
-            this.snippetManager.onunload();
+            // this.snippetManager.onunload();
+            // newview.onunload();
         });
     }
     loadSettings() {
