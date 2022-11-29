@@ -13,7 +13,7 @@ var __apiUrl;
 // var __apiUrl2;
 var __activeView;
 var __article_types;
-
+var __max_length = 100;
 var __token;
 var __isIndex;
 var __cn_note;
@@ -169,6 +169,7 @@ var DEFAULT_SETTINGS = {
     apiUrl: "https://fwzd.myfawu.com/",
     // apiUrl2: "https://fwzd.myfawu.com/refer/",
     chioceNumber: 3,
+    maxLength: 20,
     className: "poem",
     isIndex: false
 }
@@ -181,10 +182,6 @@ function searchTerm(page, article_type) {
         'page': page,
         'token': __token,
         'article_type': article_type,
-        "model_size": "distilgpt2/small",
-        "top_p": 0.9,
-        "temperature": 1,
-        "max_time": 1.2,
     };
     bar_text("加载中...🍌");
     __async(this, null, function*() {
@@ -217,8 +214,6 @@ function get_article_type() {
         }).then((res) => res.json()).catch((err) => { return bar_text("初始化失败！🍎"); });
         if (data != '') {
             __article_types = data;
-            console.log(__article_type);
-            console.log(__article_types);
             if (__article_types.hasOwnProperty(__article_type) == false) {
                 __article_type = Object.keys(__article_types)[0];
             }
@@ -228,7 +223,7 @@ function get_article_type() {
 }
 
 //生成句子函数 
-function senGenerate(url, text, atype, number, isindex = false) {
+function senGenerate(url, text, atype, number, max_length, isindex = false) {
     console.log(new Date().getTime() - __time);
     if (new Date().getTime() - __time < 1.5 * 1000) {
         return bar_text("稍慢一点可能更好！🍎");
@@ -242,6 +237,7 @@ function senGenerate(url, text, atype, number, isindex = false) {
         "top_p": 0.9,
         "temperature": 1,
         "max_time": 1.2,
+        "max_length": max_length,
         "is_index": isindex,
         "number": number
     };
@@ -260,7 +256,7 @@ function senGenerate(url, text, atype, number, isindex = false) {
                 pagebar(data['page'], 1);
                 content_text(text);
             }
-
+            console.log(data['sentences']);
             return data['sentences'].map(function(item) { return item['value'] })
         } else {
             return [];
@@ -299,6 +295,7 @@ class QUOTEListView extends obsidian.ItemView {
                 __token = this.plugin.settings.token;
                 __isIndex = this.plugin.settings.isIndex;
                 __cn_note = this.plugin.settings.cn_note;
+                __max_length = this.plugin.settings.max_length;
                 get_article_type();
             }, 3000);
             statusBarItem = this.plugin.addStatusBarItem();
@@ -354,7 +351,7 @@ function auto_write(j, n) {
 
         data = __async(this, null, function*() {
 
-            let data = yield senGenerate(__apiUrl + 'generate', words, __article_type, 1, false);
+            let data = yield senGenerate(__apiUrl + 'generate', words, __article_type, 1, 10, false);
             if (data.length > 0) {
                 words += data[0];
                 const replacement = getSuggestionReplacement(data[0]);
@@ -408,7 +405,7 @@ var SuggestionPopup = class extends import_obsidian3.EditorSuggest {
         __apiUrl = this.settings.apiUrl;
         bar_text("加载中...🍌")
         return __async(this, null, function*() {
-            return yield senGenerate(__apiUrl + 'generate', this.word, __article_type, this.settings.chioceNumber, __isIndex);
+            return yield senGenerate(__apiUrl + 'generate', this.word, __article_type, this.settings.chioceNumber, this.settings.maxLength, __isIndex);
         });
     }
     onTrigger(cursor, editor, file) {
@@ -527,26 +524,25 @@ var SenGenerSettingsTab = class extends import_obsidian4.PluginSettingTab {
                 yield this.plugin.saveSettings();
             }));
         });
-        // new import_obsidian4.Setting(containerEl).setName("Text searching service Address").setDesc("The service address for Indexing .\r\n\
-        // The default address is https://fwzd.myfawu.com/refer").addText((text) => text.setValue(this.plugin.settings.apiUrl2)
-        //     .onChange(
-        //         (val) => __async(this, null, function*() {
-        //             try {
-        //                 text.inputEl.removeClass("SenGener-settings-error");
-        //                 this.plugin.settings.apiUrl2 = val;
-        //                 yield this.plugin.saveSettings();
-        //             } catch (e) {
-        //                 text.inputEl.addClass("SenGener-settings-error");
-        //             }
-        //         })));
 
-        new import_obsidian4.Setting(containerEl).setName("Number of choices").setDesc(" Number of generated sentences")
+        new import_obsidian4.Setting(containerEl).setName("Number of choices").setDesc(" Number of generated sentences(1-9)")
             .addText((text) => {
                 text.inputEl.type = "number";
                 text.setValue(this.plugin.settings.chioceNumber + "").onChange((val) => __async(this, null, function*() {
-                    if (!val || val.length < 1 || val.length > 9)
+                    if (!val || val < 1 || val > 9)
                         return;
                     this.plugin.settings.chioceNumber = parseInt(val);
+                    yield this.plugin.saveSettings();
+                }));
+            });
+
+        new import_obsidian4.Setting(containerEl).setName("max length").setDesc(" Max words of generated sentences(5-50)")
+            .addText((text) => {
+                text.inputEl.type = "number";
+                text.setValue(this.plugin.settings.maxLength + "").onChange((val) => __async(this, null, function*() {
+                    if (!val || val < 5 || val > 50)
+                        return;
+                    this.plugin.settings.maxLength = parseInt(val);
                     yield this.plugin.saveSettings();
                 }));
             });
