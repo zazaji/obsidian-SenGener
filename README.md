@@ -3,6 +3,8 @@
 This plugin is used to generate a serial of Sentenses for writting.
 
 ![](./obsidian-sengener/demo.gif)
+![](./obsidian-sengener/_new_demo_en.gif)
+![](./obsidian-sengener/_english_demo.gif)
 
 ![](./obsidian-sengener/demo_cn.gif)
 
