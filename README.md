@@ -1,4 +1,5 @@
 # SenGenerPlugin for obsidian
+[中文](readme_CN.md)
 This plugin is used to generate a serial of Sentenses for writting.
 
 ![](./obsidian-sengener/demo.gif)
