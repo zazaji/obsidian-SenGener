@@ -50,7 +50,7 @@ https://github.com/zazaji/obsidian-SenGener/
 
 ![](http://qnet.ocome.net.cn/zazaji/pico_upload/main/img/new_demo_en.gif)
 
-**- 写一个英文小故事，不在话下**
+- **写一个英文小故事，不在话下**
 
 ![](http://qnet.ocome.net.cn/zazaji/pico_upload/main/img/_english_demo.gif)
 
