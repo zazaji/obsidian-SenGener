@@ -47,9 +47,11 @@ https://github.com/zazaji/obsidian-SenGener/
 ## 示例：
 - **英文写作**
 本来GPT2就是基于英文设计的，用在这里效率不是一般的高。分分钟一篇文章。
+
 ![](http://qnet.ocome.net.cn/zazaji/pico_upload/main/img/new_demo_en.gif)
 
 **- 写一个英文小故事，不在话下**
+
 ![](http://qnet.ocome.net.cn/zazaji/pico_upload/main/img/_english_demo.gif)
 
 
