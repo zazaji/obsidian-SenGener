@@ -43,24 +43,29 @@ https://github.com/zazaji/obsidian-SenGener/
 - max length: 一次产生的文字（英语是词）的数量。不要选太多，影响速度。
 
 ### 示例：
-- 英文写作
-本来GPT2就是基于英文设计的，用在这里效率不是一般的高。分分钟一片文章。
+- 英文写作: 本来GPT2就是基于英文设计的，用在这里效率不是一般的高。分分钟一片文章。
+
 ![](./obsidian-sengener/new_demo_en.gif)
 
 - 另一篇，写一个英文小故事
+
 ![](./obsidian-sengener/english_demo.gif)
 
 
 - 工作总结胸有成竹
+
 ![](https://blog.ouyanghome.com/wp-content/uploads/2022/09/gif.gif)
 
 
 - 新闻稿件下笔有神，
-![](./obsidian-sengener/11.gif)
-- 吟诗作赋一挥而就
-![](./obsidian-sengener/48c10a17095bc84a8939d4a7ac2326e.jpg)
 
+![](./obsidian-sengener/11.gif)
+
+- 吟诗作赋一挥而就
+
+![](./obsidian-sengener/48c10a17095bc84a8939d4a7ac2326e.jpg)
 ![](./obsidian-sengener/b3df27009a29d0d01a8234967235832.jpg)
 
 - 八股时文信手拈来
+
 ![](./obsidian-sengener/demo_cn.gif)
