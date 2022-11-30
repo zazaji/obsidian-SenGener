@@ -58,3 +58,4 @@ Or You can use my sample service ,just for test.
 
 7. Enjoy it. And contact me: zazaji@sina.com.
 
+8. The easiest way : You can download test.zip and extact to a folder as a obsidian vault, enable community plugin . 
