@@ -15,9 +15,9 @@ https://github.com/tth05/obsidian-completr
 
 ## How to use this plugin
 
-1. You need to build your API service for generating Sentenses.
+1. You need to build your API service for generating Sentenses. 
 I build the API service with GPT2. You can also use GPT2 to generate Sentenses directly , or Another one.
-The default address is supported by huggingface, I didn't get a authorization. 
+Or You can use my sample service ,just for test.
 
 2. You can build a API service like : 
 - Post Json: 
