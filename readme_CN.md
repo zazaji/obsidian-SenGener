@@ -60,7 +60,7 @@ https://github.com/zazaji/obsidian-SenGener/
 - 吟诗作赋一挥而就
 ![](./obsidian-sengener/48c10a17095bc84a8939d4a7ac2326e.jpg)
 
-![](obsidian-SenGener/b3df27009a29d0d01a8234967235832.jpg)
+![](./obsidian-sengener/b3df27009a29d0d01a8234967235832.jpg)
 
 - 八股时文信手拈来
 ![](./obsidian-sengener/demo_cn.gif)
