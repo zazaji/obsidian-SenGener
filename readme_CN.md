@@ -32,7 +32,7 @@ https://github.com/zazaji/obsidian-SenGener/
 -   创建一个文件，开始写作。
 
 ## 参数介绍
-- API address: 服务地址，默认https://fwzd.myfawu.com/，是我提供的一个示例服务。里面包含了英文模型、对话模型、工作报告模型、腾讯welm模型。
+- API address: 服务地址，填写自己的API地址。我搭建了一个示例服务(https://fwzd.myfawu.com/)。里面包含了英文模型、对话模型、工作报告模型、腾讯welm模型。
 
 - Type: 可以选择不同的创作模型。
 
