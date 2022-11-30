@@ -45,10 +45,10 @@ https://github.com/zazaji/obsidian-SenGener/
 ### 示例：
 - 英文写作
 本来GPT2就是基于英文设计的，用在这里效率不是一般的高。分分钟一片文章。
-![[obsidian-SenGener/new_demo_en.gif]]
+![](./obsidian-SenGener/new_demo_en.gif)
 
 - 另一篇，写一个英文小故事
-![[obsidian-SenGener/english_demo.gif]]
+![](obsidian-SenGener/english_demo.gif)
 
 
 - 工作总结胸有成竹
@@ -56,11 +56,11 @@ https://github.com/zazaji/obsidian-SenGener/
 
 
 - 新闻稿件下笔有神，
-![[obsidian-SenGener/11.gif]]
+![](obsidian-SenGener/11.gif)
 - 吟诗作赋一挥而就
- ![[obsidian-SenGener/48c10a17095bc84a8939d4a7ac2326e.jpg]]
+![](obsidian-SenGener/48c10a17095bc84a8939d4a7ac2326e.jpg)
 
-![[obsidian-SenGener/b3df27009a29d0d01a8234967235832.jpg]]
+![](obsidian-SenGener/b3df27009a29d0d01a8234967235832.jpg)
 
 - 八股时文信手拈来
-![[obsidian-SenGener/demo_cn.gif]]
+![](obsidian-SenGener/demo_cn.gif)
