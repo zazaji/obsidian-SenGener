@@ -27,23 +27,30 @@ Or You can use my sample service ,just for test.
 
 ```Json
 {
-	"context": "You  win the game.",
-	"number": 3
+	"context": "Yes, We ",
+	"token": "Your_token",
+	"article_type": "english",
+	"max_length": 10,
+	"number": 3,
+	"is_index": true
 }
 ```
 
 - Response Json: 
 ```Json
+
 {
- 	"sentenses": [
-      {
-         "value": "You are so smart"
-      }, {
-         "value": "That's great"
-      }, {
-         "value": "The Next game is waitting for you."
-      }
-   ]
+	ref: [{
+		"content": "...",
+		"title": "没有找到匹配内容"
+	}],
+	"sentenses": [{
+		"value": ", the people of the United States, stand together"
+	}, {
+		"value": " to say, this is the best deal we've"
+	}, {
+		"value": " can't say anything, but it's not our"
+	}]
 }
 ```
 
