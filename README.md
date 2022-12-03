@@ -29,8 +29,15 @@ https://github.com/tth05/obsidian-completr
 
 4. You can also select different authoring models and adjust other parameters.
 
-7. Create a document and start writing. Enjoy it. And contact me: zazaji@sina.com.
+5. Create a document and start writing. Enjoy it. And contact me: zazaji@sina.com.
 
+## Parameter
+- API address: service address : Fill in your own API address. I built an example service, which includes English model, dialogue model（Chinese）, work report model（Chinese） and Tencent welm model（Chinese and few English suport）. Sample address: https://fwzd.myfawu.com 
+- Type: You can select different authoring models.
+- Token: the token used to log in to Tencent welm. You can apply by yourself on Tencent welm official website.
+- Enable searching: Whether to enable full-text retrieval. Currently, it provides full-text retrieval for the report model.
+- Number of choices: How many candidates. Don’t choose too many, which will affect the speed.
+- Max length: the number of words produced at a time. Don’t choose too many, which will affect the speed.
 
 ## build your data service
 
