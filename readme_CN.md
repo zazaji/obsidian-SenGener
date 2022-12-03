@@ -26,7 +26,7 @@ https://github.com/zazaji/obsidian-SenGener/
 -  下载安装obsidian。
 -   创建一个文库，并指定路径。
 -   进入该文库，并启用第三方插件模式。
--   进入到文库所在路径，将github上的main.js、style.css放入`.obsidian/plugins/obsidian-SenGener`文件夹。
+-   进入到文库所在路径，releases下载解压后放入`.obsidian/plugins/obsidian-SenGener`文件夹。
 -   如果觉得以上操作复杂了，可采用最简单的方式，将github上的test.zip下载解压后，用obsidian打开，然后启用第三方插件模式。
 -   在第三方插件中启用该插件。并配置快捷键。默认快捷键是`ctrl + 引号`。也可以选择不同的创作模型，调整其他参数。
 -   创建一个文件，开始写作。
