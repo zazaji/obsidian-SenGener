@@ -3,7 +3,9 @@
 This plugin is used to generate a serial of Sentenses for writting. 
 
 ![](./obsidian-sengener/demo.gif)
+
 ![](./obsidian-sengener/_new_demo_en.gif)
+
 ![](./obsidian-sengener/_english_demo.gif)
 
 ![](./obsidian-sengener/demo_cn.gif)
@@ -18,11 +20,27 @@ https://github.com/tth05/obsidian-completr
 
 ## How to use this plugin
 
-1. You need to build your API service for generating Sentenses. 
-I build the API service with GPT2. You can also use GPT2 to generate Sentenses directly , or Another one.
-Or you can use my sample service ,just for test.
+1. download and install obsidian. Create a vault and specify the path. 
 
-2. You can build a API service like : 
+2. goto the vault folder. download from releases , and extract them to the plugin folder,
+   the path like:   VAULT/.obsidian/plugins/obsidian-sengener.
+   
+3. Open setting, enable community plugins, then set you options, enable SenSener and configure hot-keys. The default shortcut key is ctrl+`quotation`.
+
+4. You can also select different authoring models and adjust other parameters.
+
+7. Create a document and start writing. Enjoy it. And contact me: zazaji@sina.com.
+
+
+## build your data service
+
+- I build the API service with GPT2. You can also use GPT2 to generate Sentenses directly , or Another one.
+- You can build your API service for generating Sentenses. Or you can use the sample service, just for test.
+- The example provides english model and chinese model, and  Full-text search . If you want use Another language , you can train your language generation service.
+- Data service contain text-generator and full-text-search.
+
+
+1. You can build a API service like : 
 - Post Json: 
 
 ```Json
@@ -53,16 +71,3 @@ Or you can use my sample service ,just for test.
 	}]
 }
 ```
-
-3. The example provides english model and chinese model. If you want use Another language , you can build your language generation service.
-
-4. Add Full-text supported. And you add search function to the service .
-
-5. Download Obsidian, create a vault , and goto the vault folder. download from releases , and extract them to the plugin folder,
-   the path like:   VAULT/.obsidian/plugins/obsidian-sengener
-
-6. Open setting, enable community plugins, then set you options, and enable SenSener. 
-
-7. Enjoy it. And contact me: zazaji@sina.com.
-
-8. The easiest way : You can download test.zip and extact to a folder as a obsidian vault, enable community plugin . 
