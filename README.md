@@ -44,11 +44,11 @@ https://github.com/tth05/obsidian-completr
 - I build the API service with GPT2. You can also use GPT2 to generate Sentenses directly , or Another one.
 - You can build your API service for generating Sentenses. Or you can use the sample service, just for test.
 - The example provides english model and chinese model, and  Full-text search . If you want use Another language , you can train your language generation service.
-- Data service contain text-generator and full-text-search.
+- Data service contain text-generator and full-text-search. The new repo will will be on soon.
 
 
-1. You can build a API service like : 
-- Post Json: 
+- You can build a API service like : 
+Post Json: 
 
 ```Json
 {
@@ -61,7 +61,7 @@ https://github.com/tth05/obsidian-completr
 }
 ```
 
-- Response Json: 
+Response Json: 
 ```Json
 
 {
