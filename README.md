@@ -39,7 +39,7 @@ https://github.com/tth05/obsidian-completr
 - Number of choices: How many candidates. Don’t choose too many, which will affect the speed.
 - Max length: the number of words produced at a time. Don’t choose too many, which will affect the speed.
 
-## build your data service
+## Build your data service
 
 - I build the API service with GPT2. You can also use GPT2 to generate Sentenses directly , or Another one.
 - You can build your API service for generating Sentenses. Or you can use the sample service, just for test.
