@@ -74,3 +74,8 @@ https://github.com/zazaji/obsidian-SenGener/
 - 八股小文信手拈来
 
 ![](http://qnet.ocome.net.cn/zazaji/pico_upload/main/img/demo_cn.gif)
+
+## 最新进展
+- 2022.12.6 增加中文诗词模型服务
+- 2022.12.6 增加党建文章模型服务
+
