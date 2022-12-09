@@ -156,10 +156,12 @@ function getSuggestionReplacement(suggestion) {
     return typeof suggestion === "string" ? suggestion : suggestion.replacement;
 }
 //状态栏信息提示
-function bar_text(text) {
+function bar_text(text, timeout = 10000) {
     statusBarItem.empty();
     statusBarItem.createEl("span", { text: text });
-    setTimeout(() => { statusBarItem.empty(); }, 5000);
+    if (timeout > 0) {
+        setTimeout(() => { statusBarItem.empty(); }, timeout);
+    }
     return '';
 }
 // 
@@ -183,7 +185,7 @@ function searchTerm(page, article_type) {
         'token': __token,
         'article_type': article_type,
     };
-    bar_text("加载中...🍌");
+    bar_text("Loading...🍋");
     __async(this, null, function*() {
         let data = yield fetch(__apiUrl + 'refer', {
             method: "post",
@@ -191,10 +193,10 @@ function searchTerm(page, article_type) {
                 "content-type": "application/json"
             },
             body: JSON.stringify(idata)
-        }).then((res) => res.json()).catch((err) => { return bar_text("加载失败！🍎"); });
+        }).then((res) => res.json()).catch((err) => { return bar_text("Failed! 🆘"); });
         if (data != '') {
             let text = data['ref'].map(function(item) { return '<span class="title"> <b>-' + item['title'] + '</b> </span><br>' + item['content'] + '' }).join('<br>');
-            bar_text("加载完成！🥦");
+            bar_text("Done! 🍀");
             pagebar(data['page'], page);
             content_text(text);
         }
@@ -203,7 +205,7 @@ function searchTerm(page, article_type) {
 
 //获取功能列表
 function get_article_type() {
-    // bar_text("加载中...🍌");
+    // bar_text("Loading...🍋");
     __async(this, null, function*() {
         // console.log(__apiUrl + 'func');
         let data = yield fetch(__apiUrl + 'func', {
@@ -211,13 +213,13 @@ function get_article_type() {
             headers: {
                 "content-type": "application/json"
             },
-        }).then((res) => res.json()).catch((err) => { return bar_text("初始化失败！🍎"); });
+        }).then((res) => res.json()).catch((err) => { return bar_text("Failed. 🆘"); });
         if (data != '') {
             __article_types = data;
             if (__article_types.hasOwnProperty(__article_type) == false) {
                 __article_type = Object.keys(__article_types)[0];
             }
-            bar_text("初始化" + __article_type + "模型🥦");
+            bar_text("Loading " + __article_type + "🍀");
         }
     })
 }
@@ -226,7 +228,7 @@ function get_article_type() {
 function senGenerate(url, text, atype, number, max_length, isindex = false) {
     console.log(new Date().getTime() - __time);
     if (new Date().getTime() - __time < 1.5 * 1000) {
-        return bar_text("稍慢一点可能更好！🍎");
+        return bar_text("Request slowly. 🆘");
     }
     __time = new Date().getTime();
     let idata = {
@@ -248,7 +250,7 @@ function senGenerate(url, text, atype, number, max_length, isindex = false) {
                 "content-type": "application/json"
             },
             body: JSON.stringify(idata)
-        }).then((res) => res.json()).catch((err) => { return bar_text("加载失败！🍎"); });
+        }).then((res) => res.json()).catch((err) => { return bar_text("Failed! 🆘"); });
         if (data != '') {
             if (isindex) {
                 BARCONTAINER.children[2].value = data['keywords'];
@@ -264,7 +266,12 @@ function senGenerate(url, text, atype, number, max_length, isindex = false) {
 
     })
 }
-
+//🥔🍡🍧🐬🍫🌒🥓🦑🦃🍋🐌🦂🥛🍔🐔🍘💐🌔🍺🍙🐡🦞🐋🦚🦀🌱🍐🥥🎂🐠🍕💚💞🥕🍨🍇🆖
+//💟🍭🍢🥀🥑🍋🌺🍤🐤🍟🍁🐝🥬🛶🌳🌖🍝🌼🧂🥤🍱🍿🍩🦜⏬🆘🥠💛🐦🍗🌰🌭🧁🫒🐙🦆🃏❗
+//🥜🌶💓🐥🥣⏰🍵💗🍸🧆🌚🍄🌝🍣🍹🌐🦠🎾🍈🫐🦩🦉⛔🍖🥡🌌🕷🐟🆓🍮🐓💕️🦴🍼🍛🐳🦗⛅
+//💙❤🍓🏕🌞🌗🪴🦢🌓🧅🌮🌁🍒🍊🐚🌏🌛🍏🦋⏳🍚🍠🌸🌋🦐🧄🐜🌕🍻🥝🐧🍯⚘🍪🥫🍾❣🥮🌴💔
+//🍂🐛🌵🌍🧀🥨🐾🥂🍆🌽🌯🦪🥩🥧🌠🍀🥙🥘🍃🍍🥒⏫🍅🥞🍦🍰🥟🦅🍷💜❓🍲🥪.🍀🍉💘🌉
+//🧃💮🦟🧇🥚🍥🍳🍶🥗🎍🦈🍴🥯🍽🕸🌿➰🆑🥭🌘🌜🍜💖🌲🐣🐞🍑☕🍬🌎🥖🍞🆘💝🥐🧈
 var obsidian = require('obsidian');
 //    添加右侧栏
 var import_obsidian3 = require("obsidian");
@@ -294,7 +301,7 @@ class QUOTEListView extends obsidian.ItemView {
                 __apiUrl = this.plugin.settings.apiUrl;
                 __token = this.plugin.settings.token;
                 __isIndex = this.plugin.settings.isIndex;
-                __cn_note = this.plugin.settings.cn_note;
+                __cn_note = this.plugin.settings.cnNote;
                 __max_length = this.plugin.settings.max_length;
                 get_article_type();
             }, 3000);
@@ -306,16 +313,16 @@ class QUOTEListView extends obsidian.ItemView {
         BARCONTAINER = this.containerEl.children[1];
         // BARCONTAINER = container;
         BARCONTAINER.empty();
-        BARCONTAINER.createEl("h4", { text: "写作助手", cls: 'col-10' });
-        BARCONTAINER.createEl("button", { text: "8句", type: 'button', cls: 'col-2' }, (el) => {
+        BARCONTAINER.createEl("h4", { text: "Writting Assistant", cls: 'col-12' });
+        BARCONTAINER.createEl("button", { text: "Auto", type: 'button', cls: 'col-2' }, (el) => {
             el.onClickEvent(() => {
-                bar_text("加载中...🍌");
+                bar_text("Loading...🍋 ");
                 auto_write(7, 7);
             });
         });
 
-        BARCONTAINER.createEl("input", { value: "", type: 'text', cls: 'col-6', placeholder: '请输入关键词' });
-        BARCONTAINER.createEl("button", { text: "搜", type: 'button', cls: 'col-2' }, (el) => {
+        BARCONTAINER.createEl("input", { value: "", type: 'text', cls: 'col-6', placeholder: 'Please input keywords' });
+        BARCONTAINER.createEl("button", { text: "🍳", type: 'button', cls: 'col-2' }, (el) => {
             el.onClickEvent(() => {
                 __apiUrl = this.plugin.settings.apiUrl;
                 searchTerm(1, __article_type);
@@ -367,13 +374,13 @@ function auto_write(j, n) {
                     }, Math.max(1400, 3000 - new Date().getTime() - __time), j, n);
 
                 } else {
-                    bar_text("加载完成！🥦");
+                    bar_text("Done! 🍀");
                 }
             }
         });
 
     } else {
-        bar_text('失败，请先生成按快捷键生成一句测试🍎');
+        bar_text('Please input some words and press hot-keys to generate first .🆘');
     }
 }
 
@@ -403,7 +410,7 @@ var SuggestionPopup = class extends import_obsidian3.EditorSuggest {
         words += last_word;
         this.word = words;
         __apiUrl = this.settings.apiUrl;
-        bar_text("加载中...🍌")
+        bar_text("Loading...🍋")
         return __async(this, null, function*() {
             return yield senGenerate(__apiUrl + 'generate', this.word, __article_type, this.settings.chioceNumber, this.settings.maxLength, __isIndex);
         });
@@ -428,7 +435,7 @@ var SuggestionPopup = class extends import_obsidian3.EditorSuggest {
     }
     renderSuggestion(value, el) {
         el.addClass("sengener-suggestion-item");
-        bar_text("加载完成！🥦");
+        bar_text("Done! 🍀");
         el.setText(getSuggestionDisplayName(value));
     }
 
@@ -667,9 +674,31 @@ var SenGenerPlugin = class extends import_obsidian5.Plugin {
             },
             isVisible: () => this._suggestionPopup.isVisible()
         });
-
-
-
+        //快捷键3
+        this.addCommand({
+            id: "key-to-switch-model",
+            name: "key-to-switch-model",
+            hotkeys: [{
+                key: "]",
+                modifiers: ["Alt"]
+            }],
+            editorCallback: (editor) => {
+                if (__article_types == null) {
+                    __article_type = 'Null';
+                    bar_text("No model found, 💔", 0);
+                } else {
+                    if (__article_types.hasOwnProperty(__article_type) == false) {
+                        __article_type = Object.keys(__article_types)[0];
+                    } else if (Object.keys(__article_types).indexOf(__article_type) + 1 >= Object.keys(__article_types).length) {
+                        __article_type = Object.keys(__article_types)[0];
+                    } else {
+                        __article_type = Object.keys(__article_types)[Object.keys(__article_types).indexOf(__article_type) + 1];
+                    }
+                    bar_text("switch to " + __article_type + "🍀", 0);
+                }
+            },
+            isVisible: () => this._suggestionPopup.isVisible()
+        });
     }
 
 
