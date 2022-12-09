@@ -178,7 +178,7 @@ var DEFAULT_SETTINGS = {
 
 
 //全文检索函数 
-function searchTerm(page, article_type) {
+async function searchTerm(page, article_type) {
     let idata = {
         "context": BARCONTAINER.children[2].value,
         'page': page,
@@ -186,34 +186,34 @@ function searchTerm(page, article_type) {
         'article_type': article_type,
     };
     bar_text("Loading...🍋");
-    __async(this, null, function*() {
-        let data = yield fetch(__apiUrl + 'refer', {
+    try {
+        let res = await fetch(__apiUrl + 'refer', {
             method: "post",
             headers: {
                 "content-type": "application/json"
             },
             body: JSON.stringify(idata)
-        }).then((res) => res.json()).catch((err) => { return bar_text("Failed! 🆘"); });
+        });
+        let data = await res.json();
         if (data != '') {
+
             let text = data['ref'].map(function(item) { return '<span class="title"> <b>-' + item['title'] + '</b> </span><br>' + item['content'] + '' }).join('<br>');
             bar_text("Done! 🍀");
             pagebar(data['page'], page);
             content_text(text);
         }
-    })
+    } catch (e) {
+        console.log(e);
+        return bar_text("Failed. 🆘");
+    }
+
 }
 
 //获取功能列表
-function get_article_type() {
-    // bar_text("Loading...🍋");
-    __async(this, null, function*() {
-        // console.log(__apiUrl + 'func');
-        let data = yield fetch(__apiUrl + 'func', {
-            method: "get",
-            headers: {
-                "content-type": "application/json"
-            },
-        }).then((res) => res.json()).catch((err) => { return bar_text("Failed. 🆘"); });
+async function get_article_type() {
+    try {
+        let res = await fetch(__apiUrl + 'func');
+        let data = await res.json();
         if (data != '') {
             __article_types = data;
             if (__article_types.hasOwnProperty(__article_type) == false) {
@@ -221,11 +221,14 @@ function get_article_type() {
             }
             bar_text("Loading " + __article_type + "🍀");
         }
-    })
+    } catch (e) {
+        console.log(e);
+        return bar_text("Failed. 🆘");
+    }
 }
 
 //生成句子函数 
-function senGenerate(url, text, atype, number, max_length, isindex = false) {
+async function senGenerate(url, text, atype, number, max_length, isindex = false) {
     console.log(new Date().getTime() - __time);
     if (new Date().getTime() - __time < 1.5 * 1000) {
         return bar_text("Request slowly. 🆘");
@@ -243,14 +246,15 @@ function senGenerate(url, text, atype, number, max_length, isindex = false) {
         "is_index": isindex,
         "number": number
     };
-    return __async(this, null, function*() {
-        let data = yield fetch(url, {
+    try {
+        let res = await fetch(url, {
             method: "post",
             headers: {
                 "content-type": "application/json"
             },
             body: JSON.stringify(idata)
-        }).then((res) => res.json()).catch((err) => { return bar_text("Failed! 🆘"); });
+        });
+        let data = await res.json();
         if (data != '') {
             if (isindex) {
                 BARCONTAINER.children[2].value = data['keywords'];
@@ -263,8 +267,10 @@ function senGenerate(url, text, atype, number, max_length, isindex = false) {
         } else {
             return [];
         }
-
-    })
+    } catch (e) {
+        console.log(e);
+        return bar_text("Failed. 🆘");
+    }
 }
 //🥔🍡🍧🐬🍫🌒🥓🦑🦃🍋🐌🦂🥛🍔🐔🍘💐🌔🍺🍙🐡🦞🐋🦚🦀🌱🍐🥥🎂🐠🍕💚💞🥕🍨🍇🆖
 //💟🍭🍢🥀🥑🍋🌺🍤🐤🍟🍁🐝🥬🛶🌳🌖🍝🌼🧂🥤🍱🍿🍩🦜⏬🆘🥠💛🐦🍗🌰🌭🧁🫒🐙🦆🃏❗
