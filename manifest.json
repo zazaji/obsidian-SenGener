@@ -1,0 +1,10 @@
+{
+    "id": "obsidian-SenGener",
+    "name": "obsidian-SenGener",
+    "version": "1.1.1",
+    "minAppVersion": "1.0.0",
+    "description": "This plugin can generate sentenses for writting with the help of API",
+    "author": "zazaji",
+    "authorUrl": "https://github.com/zazaji",
+    "isDesktopOnly": false
+}

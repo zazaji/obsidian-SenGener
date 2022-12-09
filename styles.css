@@ -1,0 +1,93 @@
+.match {
+    color: red;
+}
+
+.right {
+    text-align: right;
+    position: absolute;
+    right: 1em;
+    float: 'right'
+}
+
+.ssmall {
+    font-size: 0.9em;
+    line-height: 1.5em;
+}
+
+.title {
+    font-size: 1.3em;
+    line-height: 2.5em;
+}
+
+.page {
+    font-size: 1.3em;
+    line-height: 2.5em;
+}
+
+.pagei {
+    border: 1px;
+    border-color: blue;
+    border-radius: 5px;
+    text-align: center;
+}
+
+ul {
+    border: 1px;
+    border-color: red;
+    display: inline-block;
+    padding: 0;
+    margin: 0;
+}
+
+ul li {
+    border: 1px;
+    display: inline;
+}
+
+ul li a {
+    border: 1px;
+    color: rgba(255, 0, 0, 0.61);
+    float: left;
+    padding: 8px 16px;
+    text-decoration: none;
+}
+
+.pagination {
+    display: inline-block;
+    border: 1px;
+    border-color: #ffcc00;
+}
+
+.pagination a {
+    border: 1px;
+    border-color: rgb(133, 129, 129);
+    border-style: solid;
+    float: left;
+    padding: 4px 8px;
+    margin: 4px;
+    text-decoration: none;
+}
+
+.pagination a.active {
+    background-color: #808080;
+    color: rgb(10, 6, 206);
+}
+
+.pagination a:hover:not(.active) {
+    background-color: #333;
+}
+
+.col-10 {
+    position: relative;
+    width: 75%;
+}
+
+.col-6 {
+    position: relative;
+    width: 50%;
+}
+
+.col-2 {
+    position: relative;
+    width: 21%;
+}
