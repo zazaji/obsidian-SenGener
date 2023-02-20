@@ -113,7 +113,7 @@ function getSuggestionDisplayName(suggestion, lowerCase = false) {
 
 function content_text(text) {
     BARCONTAINER.children[5].empty();
-    BARCONTAINER.children[5].createDiv('ssmall markdown-preview-view', (el) => {
+    BARCONTAINER.children[5].createDiv('sengener_ssmall markdown-preview-view', (el) => {
         obsidian.MarkdownRenderer.renderMarkdown(text, el, '', this);
     });
 }
@@ -169,7 +169,6 @@ function bar_text(text, timeout = 10000) {
 var DEFAULT_SETTINGS = {
     // apiUrl: "https://transformer.huggingface.co/autocomplete/",
     apiUrl: "https://fwzd.myfawu.com/",
-    // apiUrl2: "https://fwzd.myfawu.com/refer/",
     chioceNumber: 3,
     maxLength: 20,
     className: "poem",
@@ -197,7 +196,7 @@ async function searchTerm(page, article_type) {
         let data = await res.json();
         if (data != '') {
 
-            let text = data['ref'].map(function(item) { return '<span class="title"> <b>-' + item['title'] + '</b> </span><br>' + item['content'] + '' }).join('<br>');
+            let text = data['ref'].map(function(item) { return '<span class="sengener_title"> <b>-' + item['title'] + '</b> </span><br>' + item['content'] + '' }).join('<br>');
             bar_text("Done! 🍀");
             pagebar(data['page'], page);
             content_text(text);
@@ -319,16 +318,16 @@ class QUOTEListView extends obsidian.ItemView {
         BARCONTAINER = this.containerEl.children[1];
         // BARCONTAINER = container;
         BARCONTAINER.empty();
-        BARCONTAINER.createEl("h4", { text: "Writting Assistant", cls: 'col-12' });
-        BARCONTAINER.createEl("button", { text: "Auto", type: 'button', cls: 'col-2' }, (el) => {
+        BARCONTAINER.createEl("h4", { text: "Writting Assistant", cls: 'sengener_col-10' });
+        BARCONTAINER.createEl("button", { text: "Auto", type: 'button', cls: 'sengener_col-2' }, (el) => {
             el.onClickEvent(() => {
                 bar_text("Loading...🍋 ");
                 auto_write(7, 7);
             });
         });
 
-        BARCONTAINER.createEl("input", { value: "", type: 'text', cls: 'col-6', placeholder: 'Please input keywords' });
-        BARCONTAINER.createEl("button", { text: "🍳", type: 'button', cls: 'col-2' }, (el) => {
+        BARCONTAINER.createEl("input", { value: "", type: 'text', cls: 'sengener_col-6', placeholder: 'Please input keywords' });
+        BARCONTAINER.createEl("button", { text: "🍳", type: 'button', cls: 'sengener_col-2' }, (el) => {
             el.onClickEvent(() => {
                 __apiUrl = this.plugin.settings.apiUrl;
                 searchTerm(1, __article_type);
@@ -346,7 +345,7 @@ class QUOTEListView extends obsidian.ItemView {
 }
 
 
-//生成句子函数 
+//生成多个句子函数 
 function auto_write(j, n) {
     if (__activeView) {
         let line = __activeView.editor.lastLine();
@@ -401,19 +400,23 @@ var SuggestionPopup = class extends import_obsidian3.EditorSuggest {
         this.word = '';
     }
     getSuggestions() {
-        __activeView = this.app.workspace.getActiveViewOfType(import_obsidian3.MarkdownView);
-        __end = this.context.end;
 
-        let line = this.context.end.line;
-        let cursor = this.context.editor.getLine(line).length;
-        let words = ''
-        for (var i = line - 3; i < line; i++) {
-            if (i >= 0) {
-                words += this.context.editor.getLine(i) + '\n';
+        __activeView = this.app.workspace.getActiveViewOfType(import_obsidian3.MarkdownView);
+        let words= __activeView.editor.getSelection();
+        console.log(words)
+        if (words.length == 0) {
+            __end = this.context.end;
+            let line = this.context.end.line;
+            let cursor = this.context.editor.getLine(line).length;
+            for (var i = line - 3; i < line; i++) {
+                if (i >= 0) {
+                    words += this.context.editor.getLine(i) + '\n';
+                }
             }
+            let last_word = this.context.editor.getLine(line).slice(0, cursor);
+            words += last_word;
         }
-        let last_word = this.context.editor.getLine(line).slice(0, cursor);
-        words += last_word;
+
         this.word = words;
         __apiUrl = this.settings.apiUrl;
         bar_text("Loading...🍋")
@@ -422,7 +425,9 @@ var SuggestionPopup = class extends import_obsidian3.EditorSuggest {
         });
     }
     onTrigger(cursor, editor, file) {
+        console.log('onTrigger',this.justClosed);
         if (this.justClosed) {
+            
             this.justClosed = false;
             return null;
         }
@@ -446,6 +451,8 @@ var SuggestionPopup = class extends import_obsidian3.EditorSuggest {
     }
 
     selectSuggestion(value, evt) {
+        console.log('asdasd')
+
         const activeView = this.app.workspace.getActiveViewOfType(import_obsidian3.MarkdownView);
 
         const replacement = getSuggestionReplacement(value);
@@ -471,6 +478,8 @@ var SuggestionPopup = class extends import_obsidian3.EditorSuggest {
         self.suggestions.setSelectedItem(self.suggestions.selectedItem + dir, true);
     }
     getSelectedItem() {
+        console.log('asdzzzdasd')
+
         const self = this;
         return self.suggestions.values[self.suggestions.selectedItem];
     }
@@ -482,6 +491,8 @@ var SuggestionPopup = class extends import_obsidian3.EditorSuggest {
         return this.isOpen;
     }
     preventNextTrigger() {
+        console.log('rktyfdf')
+
         this.justClosed = true;
     }
 };
@@ -655,7 +666,7 @@ var SenGenerPlugin = class extends import_obsidian5.Plugin {
                 }
             }
         });
-        //快捷键1
+        //快捷键1-escape
         this.addCommand({
             id: "escape-popup",
             name: "escape-popup",
@@ -666,7 +677,7 @@ var SenGenerPlugin = class extends import_obsidian5.Plugin {
             editorCallback: () => {},
             isVisible: () => this._suggestionPopup.isVisible()
         });
-        //快捷键2
+        //快捷键2-suggestion
         this.addCommand({
             id: "key-to-suggestion",
             name: "key-to-suggestion",
@@ -680,7 +691,7 @@ var SenGenerPlugin = class extends import_obsidian5.Plugin {
             },
             isVisible: () => this._suggestionPopup.isVisible()
         });
-        //快捷键3
+        //快捷键3-switch-model
         this.addCommand({
             id: "key-to-switch-model",
             name: "key-to-switch-model",
@@ -690,8 +701,17 @@ var SenGenerPlugin = class extends import_obsidian5.Plugin {
             }],
             editorCallback: (editor) => {
                 if (__article_types == null) {
-                    __article_type = 'Null';
-                    bar_text("No model found, 💔", 0);
+                    get_article_type();
+                    setTimeout(() => {
+                        try {
+                            __article_type = Object.keys(__article_types)[0];
+                            bar_text("switch to " + __article_type + "🍀", 0);
+                        } catch (e) {
+                            __article_type = 'Null';
+                            bar_text("No model found, 💔", 0);
+                        }
+                    }, 1000);
+
                 } else {
                     if (__article_types.hasOwnProperty(__article_type) == false) {
                         __article_type = Object.keys(__article_types)[0];
