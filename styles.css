@@ -1,30 +1,30 @@
-.match {
+.sengener_match {
     color: red;
 }
 
-.right {
+.sengener_right {
     text-align: right;
     position: absolute;
     right: 1em;
     float: 'right'
 }
 
-.ssmall {
+.sengener_ssmall {
     font-size: 0.9em;
     line-height: 1.5em;
 }
 
-.title {
+.sengener_title {
     font-size: 1.3em;
     line-height: 2.5em;
 }
 
-.page {
+.sengener_page {
     font-size: 1.3em;
     line-height: 2.5em;
 }
 
-.pagei {
+.sengener_pagei {
     border: 1px;
     border-color: blue;
     border-radius: 5px;
@@ -52,13 +52,13 @@ ul li a {
     text-decoration: none;
 }
 
-.pagination {
+.sengener_pagination {
     display: inline-block;
     border: 1px;
     border-color: #ffcc00;
 }
 
-.pagination a {
+.sengener_pagination a {
     border: 1px;
     border-color: rgb(133, 129, 129);
     border-style: solid;
@@ -68,7 +68,7 @@ ul li a {
     text-decoration: none;
 }
 
-.pagination a.active {
+.sengener_pagination a.active {
     background-color: #808080;
     color: rgb(10, 6, 206);
 }
@@ -77,17 +77,17 @@ ul li a {
     background-color: #333;
 }
 
-.col-10 {
+.sengener_col-10 {
     position: relative;
     width: 75%;
 }
 
-.col-6 {
+.sengener_col-6 {
     position: relative;
     width: 50%;
 }
 
-.col-2 {
+.sengener_col-2 {
     position: relative;
     width: 21%;
 }
