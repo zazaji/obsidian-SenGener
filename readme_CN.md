@@ -62,7 +62,7 @@ https://github.com/zazaji/obsidian-SenGener/
 
 - **新闻稿件下笔有神**
 
-![](http://qnet.ocome.net.cn/zazaji/pico_upload/main/11.gif)
+![](https://github.com/zazaji/pico_upload/blob/main/11.gif)
 
 - **吟诗作赋一挥而就**
 
