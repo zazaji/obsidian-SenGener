@@ -48,16 +48,16 @@ https://github.com/zazaji/obsidian-SenGener/
 - **英文写作**
 本来GPT2就是基于英文设计的，用在这里效率不是一般的高。分分钟一篇文章。
 
-![](http://qnet.ocome.net.cn/zazaji/pico_upload/main/img/new_demo_en.gif)
+![](https://github.com/zazaji/pico_upload/blob/main/img/new_demo_en.gif)
 
 - **写一个英文小故事，不在话下**
 
-![](http://qnet.ocome.net.cn/zazaji/pico_upload/main/img/_english_demo.gif)
+![](https://github.com/zazaji/pico_upload/blob/main/img/_english_demo.gif)
 
 
 - **工作总结胸有成竹**
 
-![](http://qnet.ocome.net.cn/zazaji/pico_upload/main/img/report.gif)
+![](https://github.com/zazaji/pico_upload/blob/main/img/report.gif)
 
 
 - **新闻稿件下笔有神**
@@ -66,14 +66,14 @@ https://github.com/zazaji/obsidian-SenGener/
 
 - **吟诗作赋一挥而就**
 
- ![](http://qnet.ocome.net.cn/zazaji/pico_upload/main/img/48c10a17095bc84a8939d4a7ac2326e.jpg)
+ ![](https://github.com/zazaji/pico_upload/blob/main/img/48c10a17095bc84a8939d4a7ac2326e.jpg)
 
-![](http://qnet.ocome.net.cn/zazaji/pico_upload/main/img/b3df27009a29d0d01a8234967235832.jpg)
+![](https://github.com/zazaji/pico_upload/blob/main/img/b3df27009a29d0d01a8234967235832.jpg)
 
 
 - 八股小文信手拈来
 
-![](http://qnet.ocome.net.cn/zazaji/pico_upload/main/img/demo_cn.gif)
+![](https://github.com/zazaji/pico_upload/blob/main/img/demo_cn.gif)
 
 ## 最新进展
 - 2022.12.6 增加中文诗词模型服务
