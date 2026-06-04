@@ -32,7 +32,7 @@ https://github.com/tth05/obsidian-completr
 5. Create a document and start writing. Enjoy it. And contact me: zazaji@sina.com.
 
 ## Parameter
-- API address: service address : Fill in your own API address. I built an example service, which includes English model, dialogue model（Chinese）, work report model（Chinese） and Tencent welm model（Chinese and few English suport）. Sample address: https://fwzd.myfawu.com 
+- API address: service address : Fill in your own API address.
 - Type: You can select different authoring models.
 - Token: the token used to log in to Tencent welm. You can apply by yourself on Tencent welm official website.
 - Enable searching: Whether to enable full-text retrieval. Currently, it provides full-text retrieval for the report model.

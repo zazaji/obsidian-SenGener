@@ -1,9 +1,14 @@
 {
-  "apiUrl": "https://fwzd.myfawu.com/",
+  "apiProvider": "gpt2",
+  "apiUrl": "",
+  "token": "",
+  "apiKey": "",
+  "openaiModel": "gpt-3.5-turbo",
+  "systemPrompt": "You are a writing assistant. Provide natural, fluent continuations of the given text.",
+  "temperature": 0.9,
   "chioceNumber": 3,
   "maxLength": 10,
   "className": "article",
-  "isIndex": true,
-  "token": "cchi48mv9mc753cgt5ig",
-  "cnNote": "Writting assistant: Enjoy writing, full-text search and text-generation supported.  <br>写作助手：人工智能技术，让你文思如泉涌，写文章、作诗、报告纵享丝滑。可定制自己的专属模型。mailto:zazaji@sina.com"
+  "isIndex": false,
+  "cnNote": "Writing assistant: AI-powered text generation and full-text search. Supports GPT2 and OpenAI-compatible APIs."
 }

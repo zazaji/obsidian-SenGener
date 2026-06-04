@@ -8,6 +8,7 @@ Author：https://github.com/zazaji
 Thanks: https://github.com/tth05/obsidian-completr
 */
 var __show = false;
+var __provider;
 var __end;
 var __apiUrl;
 // var __apiUrl2;
@@ -85,6 +86,150 @@ __export(main_exports, {
 module.exports = __toCommonJS(main_exports);
 var import_obsidian5 = require("obsidian");
 
+// Provider classes
+var GPT2Provider = class {
+    constructor(settings) {
+        this.apiUrl = settings.apiUrl;
+        this.token = settings.token;
+        this.articleType = settings.className;
+        this.articleTypes = {};
+    }
+    async getModels() {
+        try {
+            let res = await fetch(this.apiUrl + 'func');
+            let data = await res.json();
+            if (data != '') {
+                this.articleTypes = data;
+                return data;
+            }
+            return {};
+        } catch (e) {
+            console.log(e);
+            return {};
+        }
+    }
+    async generate(context, number, maxLength, isIndex) {
+        let idata = {
+            "context": context,
+            "token": this.token,
+            "model_size": "distilgpt2/small",
+            "article_type": this.articleType,
+            "top_p": 0.9,
+            "temperature": 1,
+            "max_time": 1.2,
+            "max_length": maxLength,
+            "is_index": isIndex,
+            "number": number
+        };
+        try {
+            let res = await fetch(this.apiUrl + 'generate', {
+                method: "post",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify(idata)
+            });
+            let data = await res.json();
+            if (data != '') {
+                let sentences = data['sentences'].map(function(item) { return item['value'] });
+                let result = { sentences: sentences };
+                if (isIndex) {
+                    result.keywords = data['keywords'];
+                    result.ref = data['ref'];
+                    result.page = data['page'];
+                }
+                return result;
+            }
+            return { sentences: [] };
+        } catch (e) {
+            console.log(e);
+            throw e;
+        }
+    }
+    async search(context, page) {
+        let idata = {
+            "context": context,
+            "page": page,
+            "token": this.token,
+            "article_type": this.articleType,
+        };
+        try {
+            let res = await fetch(this.apiUrl + 'refer', {
+                method: "post",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify(idata)
+            });
+            let data = await res.json();
+            if (data != '') {
+                return { ref: data['ref'], page: data['page'] };
+            }
+            return { ref: [], page: 1 };
+        } catch (e) {
+            console.log(e);
+            throw e;
+        }
+    }
+};
+
+var OpenAIProvider = class {
+    constructor(settings) {
+        this.apiUrl = settings.apiUrl ? settings.apiUrl.replace(/\/+$/, '') : 'https://api.openai.com';
+        this.apiKey = settings.apiKey;
+        this.model = settings.openaiModel;
+        this.systemPrompt = settings.systemPrompt;
+        this.temperature = settings.temperature;
+    }
+    async getModels() {
+        return {};
+    }
+    async generate(context, number, maxLength, isIndex) {
+        let messages = [
+            { role: "system", content: this.systemPrompt },
+            { role: "user", content: "Continue the following text naturally. Provide " + number + " different continuations, each numbered on a separate line:\n\n" + context }
+        ];
+        try {
+            let res = await fetch(this.apiUrl + '/v1/chat/completions', {
+                method: "post",
+                headers: {
+                    "content-type": "application/json",
+                    "Authorization": "Bearer " + this.apiKey
+                },
+                body: JSON.stringify({
+                    model: this.model,
+                    messages: messages,
+                    max_tokens: maxLength,
+                    temperature: this.temperature,
+                    n: 1
+                })
+            });
+            if (!res.ok) {
+                console.log("OpenAI API error:", res.status, res.statusText);
+                return { sentences: [] };
+            }
+            let data = await res.json();
+            if (data.choices && data.choices.length > 0) {
+                let content = data.choices[0].message.content;
+                let lines = content.split('\n')
+                    .map(function(l) { return l.replace(/^\d+[\.\)]\s*/, '').trim(); })
+                    .filter(function(l) { return l.length > 0; });
+                return { sentences: lines.slice(0, number) };
+            }
+            return { sentences: [] };
+        } catch (e) {
+            console.log(e);
+            throw e;
+        }
+    }
+    async search(context, page) {
+        return { ref: [], page: 1 };
+    }
+};
+
+function createProvider(settings) {
+    if (settings.apiProvider === 'openai') {
+        return new OpenAIProvider(settings);
+    }
+    return new GPT2Provider(settings);
+}
+
 // src/snippet_manager.ts
 var SnippetManager = class {
     constructor() {
@@ -158,7 +303,20 @@ function getSuggestionReplacement(suggestion) {
 //状态栏信息提示
 function bar_text(text, timeout = 10000) {
     statusBarItem.empty();
-    statusBarItem.createEl("span", { text: text });
+    let cls = 'sengener-status-text';
+    let showSpinner = false;
+    if (text.includes("Done") || text.includes("ok")) {
+        cls += ' sengener-status-ok';
+    } else if (text.includes("Failed") || text.includes("fail") || text.includes("Error")) {
+        cls += ' sengener-status-error';
+    } else if (text.includes("Search") || text.includes("Generat") || text.includes("Model")) {
+        cls += ' sengener-status-loading';
+        showSpinner = true;
+    }
+    if (showSpinner) {
+        statusBarItem.createSpan({ cls: 'sengener-spinner' });
+    }
+    statusBarItem.createEl("span", { text: text, cls: cls });
     if (timeout > 0) {
         setTimeout(() => { statusBarItem.empty(); }, timeout);
     }
@@ -167,8 +325,13 @@ function bar_text(text, timeout = 10000) {
 // 
 // src/settings.ts
 var DEFAULT_SETTINGS = {
-    // apiUrl: "https://transformer.huggingface.co/autocomplete/",
-    apiUrl: "https://fwzd.myfawu.com/",
+    apiProvider: "gpt2",
+    apiUrl: "",
+    token: "",
+    apiKey: "",
+    openaiModel: "gpt-3.5-turbo",
+    systemPrompt: "You are a writing assistant. Provide natural, fluent continuations of the given text.",
+    temperature: 0.9,
     chioceNumber: 3,
     maxLength: 20,
     className: "poem",
@@ -178,51 +341,40 @@ var DEFAULT_SETTINGS = {
 
 //全文检索函数 
 async function searchTerm(page, article_type) {
-    let idata = {
-        "context": BARCONTAINER.children[2].value,
-        'page': page,
-        'token': __token,
-        'article_type': article_type,
-    };
-    bar_text("Loading...🍋");
+    if (!__provider) return bar_text("Provider not initialized.");
+    bar_text("Searching...");
     try {
-        let res = await fetch(__apiUrl + 'refer', {
-            method: "post",
-            headers: {
-                "content-type": "application/json"
-            },
-            body: JSON.stringify(idata)
-        });
-        let data = await res.json();
-        if (data != '') {
-
-            let text = data['ref'].map(function(item) { return '<span class="sengener_title"> <b>-' + item['title'] + '</b> </span><br>' + item['content'] + '' }).join('<br>');
-            bar_text("Done! 🍀");
-            pagebar(data['page'], page);
+        let result = await __provider.search(BARCONTAINER.children[2].value, page);
+        if (result.ref && result.ref.length > 0) {
+            let text = result.ref.map(function(item) { return '<span class="sengener_title"> <b>-' + item['title'] + '</b> </span><br>' + item['content']; }).join('<br>');
+            bar_text("Done.");
+            pagebar(result.page, page);
             content_text(text);
+        } else {
+            content_text('');
+            bar_text("No results.");
         }
     } catch (e) {
         console.log(e);
-        return bar_text("Failed. 🆘");
+        return bar_text("Search failed.");
     }
-
 }
 
 //获取功能列表
 async function get_article_type() {
+    if (!__provider) return;
     try {
-        let res = await fetch(__apiUrl + 'func');
-        let data = await res.json();
+        let data = await __provider.getModels();
         if (data != '') {
             __article_types = data;
             if (__article_types.hasOwnProperty(__article_type) == false) {
                 __article_type = Object.keys(__article_types)[0];
             }
-            bar_text("Loading " + __article_type + "🍀");
+            bar_text("Model: " + __article_type);
         }
     } catch (e) {
         console.log(e);
-        return bar_text("Failed. 🆘");
+        return bar_text("Failed to load models.");
     }
 }
 
@@ -230,45 +382,23 @@ async function get_article_type() {
 async function senGenerate(url, text, atype, number, max_length, isindex = false) {
     console.log(new Date().getTime() - __time);
     if (new Date().getTime() - __time < 1.5 * 1000) {
-        return bar_text("Request slowly. 🆘");
+        return bar_text("Request too fast. Please wait.");
     }
     __time = new Date().getTime();
-    let idata = {
-        "context": text,
-        'token': __token,
-        "model_size": "distilgpt2/small",
-        "article_type": atype,
-        "top_p": 0.9,
-        "temperature": 1,
-        "max_time": 1.2,
-        "max_length": max_length,
-        "is_index": isindex,
-        "number": number
-    };
+    if (!__provider) return bar_text("Provider not initialized.");
     try {
-        let res = await fetch(url, {
-            method: "post",
-            headers: {
-                "content-type": "application/json"
-            },
-            body: JSON.stringify(idata)
-        });
-        let data = await res.json();
-        if (data != '') {
-            if (isindex) {
-                BARCONTAINER.children[2].value = data['keywords'];
-                let text = data['ref'].map(function(item) { return '<h5>' + item['title'] + '</h5>' + item['content'] + '' }).join('<br>');
-                pagebar(data['page'], 1);
-                content_text(text);
-            }
-            console.log(data['sentences']);
-            return data['sentences'].map(function(item) { return item['value'] })
-        } else {
-            return [];
+        let result = await __provider.generate(text, number, max_length, isindex);
+        if (isindex && result.keywords) {
+            BARCONTAINER.children[2].value = result.keywords;
+            let textHtml = result.ref.map(function(item) { return '<h5>' + item['title'] + '</h5>' + item['content']; }).join('<br>');
+            pagebar(result.page, 1);
+            content_text(textHtml);
         }
+        console.log(result.sentences);
+        return result.sentences;
     } catch (e) {
         console.log(e);
-        return bar_text("Failed. 🆘");
+        return bar_text("Generation failed.");
     }
 }
 //🥔🍡🍧🐬🍫🌒🥓🦑🦃🍋🐌🦂🥛🍔🐔🍘💐🌔🍺🍙🐡🦞🐋🦚🦀🌱🍐🥥🎂🐠🍕💚💞🥕🍨🍇🆖
@@ -307,7 +437,8 @@ class QUOTEListView extends obsidian.ItemView {
                 __token = this.plugin.settings.token;
                 __isIndex = this.plugin.settings.isIndex;
                 __cn_note = this.plugin.settings.cnNote;
-                __max_length = this.plugin.settings.max_length;
+                __max_length = this.plugin.settings.maxLength;
+                __provider = createProvider(this.plugin.settings);
                 get_article_type();
             }, 3000);
             statusBarItem = this.plugin.addStatusBarItem();
@@ -316,18 +447,18 @@ class QUOTEListView extends obsidian.ItemView {
         //    右侧栏
     async onOpen() {
         BARCONTAINER = this.containerEl.children[1];
-        // BARCONTAINER = container;
         BARCONTAINER.empty();
-        BARCONTAINER.createEl("h4", { text: "Writting Assistant", cls: 'sengener_col-10' });
-        BARCONTAINER.createEl("button", { text: "Auto", type: 'button', cls: 'sengener_col-2' }, (el) => {
+        BARCONTAINER.addClass("sengener-sidebar");
+        BARCONTAINER.createEl("h4", { text: "Writing Assistant", cls: 'sengener-title' });
+        BARCONTAINER.createEl("button", { text: "Auto", type: 'button', cls: 'sengener-btn-primary' }, (el) => {
             el.onClickEvent(() => {
-                bar_text("Loading...🍋 ");
+                bar_text("Generating...");
                 auto_write(7, 7);
             });
         });
-
-        BARCONTAINER.createEl("input", { value: "", type: 'text', cls: 'sengener_col-6', placeholder: 'Please input keywords' });
-        BARCONTAINER.createEl("button", { text: "🍳", type: 'button', cls: 'sengener_col-2' }, (el) => {
+        BARCONTAINER.createEl("br");
+        BARCONTAINER.createEl("input", { value: "", type: 'text', cls: 'sengener-col-6', placeholder: 'Search keywords...' });
+        BARCONTAINER.createEl("button", { text: "Search", type: 'button', cls: 'sengener-btn-primary sengener-col-2' }, (el) => {
             el.onClickEvent(() => {
                 __apiUrl = this.plugin.settings.apiUrl;
                 searchTerm(1, __article_type);
@@ -507,78 +638,144 @@ var SenGenerSettingsTab = class extends import_obsidian4.PluginSettingTab {
     display() {
         const { containerEl } = this;
         containerEl.empty();
-        containerEl.createEl("h2", { text: "Settings for Writting Assistant." });
-
+        containerEl.createEl("h2", { text: "Settings for Writing Assistant." });
         containerEl.createDiv("content", (el) => {
             obsidian.MarkdownRenderer.renderMarkdown(__cn_note, el, '', this);
         });
 
-        new import_obsidian4.Setting(containerEl).setName("API Address").setDesc("The service address for generating sentenses.\r\n\
-         The default address is https://fwzd.myfawu.com/").addText((text) => text.setValue(this.plugin.settings.apiUrl)
-            .onChange(
-                (val) => __async(this, null, function*() {
-                    try {
-                        text.inputEl.removeClass("SenGener-settings-error");
-                        this.plugin.settings.apiUrl = val;
-                        yield this.plugin.saveSettings();
-                    } catch (e) {
-                        text.inputEl.addClass("SenGener-settings-error");
-                    }
-                })));
-
-        new import_obsidian4.Setting(containerEl).setName("token").setDesc("You can apply for your personal token for better experience, visit https://fwzd.myfawu.com/my/")
-            .addText((text) => text.setValue(this.plugin.settings.token)
-                .onChange(
-                    (val) => __async(this, null, function*() {
-                        try {
-                            text.inputEl.removeClass("SenGener-settings-error");
-                            this.plugin.settings.token = val;
-                            __token = val;
-                            yield this.plugin.saveSettings();
-                        } catch (e) {
-                            text.inputEl.addClass("SenGener-settings-error");
-                        }
-                    })));
-
-        new import_obsidian4.Setting(containerEl).setName("Enable searching?").setDesc("Enable Text searching service").addToggle((toggle) => {
-            toggle.setValue(this.plugin.settings.isIndex);
-            toggle.onChange((value) => __async(this, null, function*() {
-                __isIndex = value;
-                this.plugin.settings.isIndex = value;
-                yield this.plugin.saveSettings();
-            }));
-        });
-
-        new import_obsidian4.Setting(containerEl).setName("Number of choices").setDesc(" Number of generated sentences(1-9)")
-            .addText((text) => {
-                text.inputEl.type = "number";
-                text.setValue(this.plugin.settings.chioceNumber + "").onChange((val) => __async(this, null, function*() {
-                    if (!val || val < 1 || val > 9)
-                        return;
-                    this.plugin.settings.chioceNumber = parseInt(val);
+        // --- Provider Selection ---
+        containerEl.createEl("h3", { text: "Provider" });
+        new import_obsidian4.Setting(containerEl).setName("API Provider")
+            .setDesc("Select the backend API provider")
+            .addDropdown((dropdown) => dropdown
+                .addOption("gpt2", "GPT2 (Legacy)")
+                .addOption("openai", "OpenAI Compatible")
+                .setValue(this.plugin.settings.apiProvider)
+                .onChange((value) => __async(this, null, function*() {
+                    this.plugin.settings.apiProvider = value;
                     yield this.plugin.saveSettings();
-                }));
-            });
-
-        new import_obsidian4.Setting(containerEl).setName("max length").setDesc(" Max words of generated sentences(5-50)")
-            .addText((text) => {
-                text.inputEl.type = "number";
-                text.setValue(this.plugin.settings.maxLength + "").onChange((val) => __async(this, null, function*() {
-                    if (!val || val < 5 || val > 50)
-                        return;
-                    this.plugin.settings.maxLength = parseInt(val);
-                    yield this.plugin.saveSettings();
-                }));
-            });
-
-        new import_obsidian4.Setting(containerEl).setName("Type").setDesc("Type of what you are writting")
-            .addDropdown((dropdown) => dropdown.addOptions(__article_types)
-                .setValue(this.plugin.settings.className).onChange((value) => __async(this, null, function*() {
-                    __article_type = value;
-                    this.plugin.settings.className = value;
-                    yield this.plugin.saveSettings();
+                    this.display();
                 }))
             );
+
+        // --- GPT2 Section ---
+        if (this.plugin.settings.apiProvider === "gpt2") {
+            containerEl.createEl("h3", { text: "GPT2 Configuration" });
+            new import_obsidian4.Setting(containerEl).setName("API URL")
+                .setDesc("The service address for generating sentences")
+                .addText((text) => text.setValue(this.plugin.settings.apiUrl)
+                    .onChange((val) => __async(this, null, function*() {
+                        this.plugin.settings.apiUrl = val;
+                        yield this.plugin.saveSettings();
+                    })));
+            new import_obsidian4.Setting(containerEl).setName("Token")
+                .setDesc("Your API token")
+                .addText((text) => text.setValue(this.plugin.settings.token)
+                    .onChange((val) => __async(this, null, function*() {
+                        this.plugin.settings.token = val;
+                        __token = val;
+                        yield this.plugin.saveSettings();
+                    })));
+            new import_obsidian4.Setting(containerEl).setName("Model Type")
+                .setDesc("Type of what you are writing")
+                .addDropdown((dropdown) => dropdown.addOptions(__article_types)
+                    .setValue(this.plugin.settings.className)
+                    .onChange((value) => __async(this, null, function*() {
+                        __article_type = value;
+                        this.plugin.settings.className = value;
+                        yield this.plugin.saveSettings();
+                    }))
+                );
+        }
+
+        // --- OpenAI Section ---
+        if (this.plugin.settings.apiProvider === "openai") {
+            containerEl.createEl("h3", { text: "OpenAI Configuration" });
+            new import_obsidian4.Setting(containerEl).setName("API URL")
+                .setDesc("OpenAI-compatible API endpoint (default: https://api.openai.com)")
+                .addText((text) => text.setValue(this.plugin.settings.apiUrl)
+                    .onChange((val) => __async(this, null, function*() {
+                        this.plugin.settings.apiUrl = val;
+                        yield this.plugin.saveSettings();
+                    })));
+            new import_obsidian4.Setting(containerEl).setName("API Key")
+                .setDesc("Your API key")
+                .addText((text) => {
+                    text.inputEl.type = "password";
+                    text.setValue(this.plugin.settings.apiKey)
+                        .onChange((val) => __async(this, null, function*() {
+                            this.plugin.settings.apiKey = val;
+                            yield this.plugin.saveSettings();
+                        }));
+                });
+            new import_obsidian4.Setting(containerEl).setName("Model")
+                .setDesc("Model name (e.g., gpt-3.5-turbo, gpt-4, deepseek-chat)")
+                .addText((text) => text.setValue(this.plugin.settings.openaiModel)
+                    .onChange((val) => __async(this, null, function*() {
+                        this.plugin.settings.openaiModel = val;
+                        yield this.plugin.saveSettings();
+                    })));
+            new import_obsidian4.Setting(containerEl).setName("System Prompt")
+                .setDesc("System prompt for the model")
+                .addTextArea((text) => text.setValue(this.plugin.settings.systemPrompt)
+                    .onChange((val) => __async(this, null, function*() {
+                        this.plugin.settings.systemPrompt = val;
+                        yield this.plugin.saveSettings();
+                    })));
+        }
+
+        // --- Generation Settings ---
+        containerEl.createEl("h3", { text: "Generation" });
+        new import_obsidian4.Setting(containerEl).setName("Number of choices")
+            .setDesc("Number of generated sentences (1-9)")
+            .addText((text) => {
+                text.inputEl.type = "number";
+                text.setValue(this.plugin.settings.chioceNumber + "")
+                    .onChange((val) => __async(this, null, function*() {
+                        if (!val || val < 1 || val > 9) return;
+                        this.plugin.settings.chioceNumber = parseInt(val);
+                        yield this.plugin.saveSettings();
+                    }));
+            });
+        new import_obsidian4.Setting(containerEl).setName("Max tokens")
+            .setDesc("Max tokens per generated sentence (5-200)")
+            .addText((text) => {
+                text.inputEl.type = "number";
+                text.setValue(this.plugin.settings.maxLength + "")
+                    .onChange((val) => __async(this, null, function*() {
+                        if (!val || val < 5 || val > 200) return;
+                        this.plugin.settings.maxLength = parseInt(val);
+                        yield this.plugin.saveSettings();
+                    }));
+            });
+        if (this.plugin.settings.apiProvider === "openai") {
+            new import_obsidian4.Setting(containerEl).setName("Temperature")
+                .setDesc("Creativity of output (0.0 - 2.0, default: 0.9)")
+                .addSlider((slider) => slider
+                    .setLimits(0, 200, 10)
+                    .setValue(Math.round(this.plugin.settings.temperature * 100))
+                    .setDynamicTooltip()
+                    .onChange((val) => __async(this, null, function*() {
+                        this.plugin.settings.temperature = val / 100;
+                        yield this.plugin.saveSettings();
+                    }))
+                );
+        }
+
+        // --- Search Section ---
+        if (this.plugin.settings.apiProvider === "gpt2") {
+            containerEl.createEl("h3", { text: "Search" });
+            new import_obsidian4.Setting(containerEl).setName("Enable searching")
+                .setDesc("Enable full-text search service")
+                .addToggle((toggle) => {
+                    toggle.setValue(this.plugin.settings.isIndex);
+                    toggle.onChange((value) => __async(this, null, function*() {
+                        __isIndex = value;
+                        this.plugin.settings.isIndex = value;
+                        yield this.plugin.saveSettings();
+                    }));
+                });
+        }
     }
 
     createEnabledSetting(propertyName, desc, container) {
@@ -616,6 +813,7 @@ var SenGenerPlugin = class extends import_obsidian5.Plugin {
 
             var _a;
             yield this.loadSettings();
+            __provider = createProvider(this.settings);
             this.snippetManager = new SnippetManager();
             this._suggestionPopup = new SuggestionPopup(this.app, this.settings, this.snippetManager);
             this.registerEditorSuggest(this._suggestionPopup);
@@ -746,6 +944,7 @@ var SenGenerPlugin = class extends import_obsidian5.Plugin {
     saveSettings() {
         return __async(this, null, function*() {
             yield this.saveData(this.settings);
+            __provider = createProvider(this.settings);
         });
     }
 };

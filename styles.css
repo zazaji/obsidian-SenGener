@@ -1,93 +1,148 @@
-.sengener_match {
-    color: red;
+/* obsidian-SenGener styles */
+
+/* Status bar */
+.sengener-status-text {
+    font-size: 0.85em;
+}
+.sengener-status-ok {
+    color: var(--color-green);
+}
+.sengener-status-error {
+    color: var(--color-red);
+}
+.sengener-status-loading {
+    color: var(--text-muted);
 }
 
-.sengener_right {
+/* Spinner */
+.sengener-spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--text-muted);
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: sengener-spin 0.6s linear infinite;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+@keyframes sengener-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Primary button */
+.sengener-btn-primary {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border: none;
+    border-radius: var(--radius-s, 4px);
+    padding: 4px 12px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.85em;
+}
+.sengener-btn-primary:hover {
+    background: var(--interactive-accent-hover);
+}
+
+/* Sidebar panel */
+.sengener-col-10 {
+    display: inline-block;
+    width: 75%;
+    vertical-align: middle;
+}
+.sengener-col-6 {
+    display: inline-block;
+    width: 60%;
+    vertical-align: middle;
+    margin-bottom: 8px;
+}
+.sengener-col-2 {
+    display: inline-block;
+    width: 18%;
+    vertical-align: middle;
+    text-align: center;
+}
+.sengener-right {
     text-align: right;
-    position: absolute;
-    right: 1em;
-    float: 'right'
+    float: right;
 }
 
-.sengener_ssmall {
+/* Search result items */
+.sengener-ssmall {
     font-size: 0.9em;
     line-height: 1.5em;
 }
-
 .sengener_title {
-    font-size: 1.3em;
-    line-height: 2.5em;
+    font-size: 1.1em;
+    font-weight: 600;
+    line-height: 2em;
+    color: var(--text-normal);
 }
 
-.sengener_page {
-    font-size: 1.3em;
-    line-height: 2.5em;
+/* Result card */
+.sengener-card {
+    background: var(--background-secondary);
+    border-radius: var(--radius-s, 6px);
+    padding: 8px 12px;
+    margin: 8px 0;
+    border: 1px solid var(--background-modifier-border);
+    transition: background 0.15s ease;
+}
+.sengener-card:hover {
+    background: var(--background-secondary-alt);
 }
 
-.sengener_pagei {
-    border: 1px;
-    border-color: blue;
-    border-radius: 5px;
+/* Pagination */
+.sengener-page {
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    display: inline-block;
+    padding: 2px 8px;
+    margin: 0 2px;
+    cursor: pointer;
+    font-size: 0.85em;
+    color: var(--text-muted);
+    transition: all 0.15s ease;
+}
+.sengener-page:hover {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border-color: var(--interactive-accent);
+}
+.sengener-page.active {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    font-weight: 600;
+    border-color: var(--interactive-accent);
+}
+
+/* Sidebar container */
+.sengener-sidebar {
+    padding: 8px;
+}
+
+/* Pagination container */
+.pagination {
+    margin: 8px 0;
     text-align: center;
 }
 
-ul {
-    border: 1px;
-    border-color: red;
-    display: inline-block;
-    padding: 0;
-    margin: 0;
+/* Content area */
+.content {
+    margin-top: 8px;
 }
 
-ul li {
-    border: 1px;
-    display: inline;
-}
-
-ul li a {
-    border: 1px;
-    color: rgba(255, 0, 0, 0.61);
-    float: left;
-    padding: 8px 16px;
-    text-decoration: none;
-}
-
-.sengener_pagination {
-    display: inline-block;
-    border: 1px;
-    border-color: #ffcc00;
-}
-
-.sengener_pagination a {
-    border: 1px;
-    border-color: rgb(133, 129, 129);
-    border-style: solid;
-    float: left;
+/* Suggestion popup */
+.sengener-suggestion-item {
     padding: 4px 8px;
-    margin: 4px;
-    text-decoration: none;
+}
+.sengener-suggestion-item.is-selected {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
 }
 
-.sengener_pagination a.active {
-    background-color: #808080;
-    color: rgb(10, 6, 206);
-}
-
-.pagination a:hover:not(.active) {
-    background-color: #333;
-}
-
-.sengener_col-10 {
-    position: relative;
-    width: 75%;
-}
-
-.sengener_col-6 {
-    position: relative;
-    width: 50%;
-}
-
-.sengener_col-2 {
-    position: relative;
-    width: 21%;
+/* Matched text highlight */
+.sengener_match {
+    color: var(--color-red);
 }
